@@ -1,20 +1,17 @@
 package com.codibly.clean_energy.services;
 
+import com.codibly.clean_energy.client.EnergyMixClient;
 import com.codibly.clean_energy.dto.DayEnergyMixDTO;
 import com.codibly.clean_energy.dto.EnergyMixEntryDTO;
 import com.codibly.clean_energy.dto.api.response.GenerationIntervalDTO;
 import com.codibly.clean_energy.dto.api.response.GenerationResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -23,32 +20,23 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 public class EnergyMixService {
-    private final WebClient webClient;
+    private final EnergyMixClient energyMixClient;
+    private final Clock clock;
 
-    public EnergyMixService(WebClient webClient) {
-        this.webClient = webClient;
+    public EnergyMixService(EnergyMixClient energyMixClient, Clock clock) {
+        this.energyMixClient = energyMixClient;
+        this.clock = clock;
     }
 
     public List<DayEnergyMixDTO> getSummary() {
-        LocalDate now = LocalDate.now();
-        ZoneId utc = ZoneId.of("UTC");
-        ZonedDateTime todayStartUtc = now.atStartOfDay().plusSeconds(1).atZone(utc);
-        ZonedDateTime todayEndUtc = now.plusDays(3).atStartOfDay().atZone(utc);
+        Instant now = Instant.now(clock);
+        LocalDate today = LocalDate.ofInstant(now, clock.getZone());
+        ZoneOffset offset = clock.getZone().getRules().getOffset(now);
+        Instant todayStartUtc = today.atStartOfDay().plusSeconds(1).toInstant(offset);
+        Instant todayEndUtc = today.plusDays(3).atStartOfDay().toInstant(offset);
 
-        String url = UriComponentsBuilder.fromPath("/generation/{from}/{to}")
-                .build(false)// disables encoding, so that ":" is not encoded as "%3A"
-                .expand(
-                        todayStartUtc.format(DateTimeFormatter.ISO_INSTANT),
-                        todayEndUtc.format(DateTimeFormatter.ISO_INSTANT)
-                ).toUriString();
+        GenerationResponse response = energyMixClient.getEnergyMix(todayStartUtc, todayEndUtc);
 
-        GenerationResponse response = webClient
-                .get()
-                .uri(url)
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(GenerationResponse.class)
-                .block();
         if (response == null) {
             return null;
         }
