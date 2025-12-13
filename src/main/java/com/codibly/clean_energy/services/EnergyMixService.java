@@ -5,6 +5,7 @@ import com.codibly.clean_energy.dto.DayEnergyMixDTO;
 import com.codibly.clean_energy.dto.EnergyMixEntryDTO;
 import com.codibly.clean_energy.dto.api.response.GenerationIntervalDTO;
 import com.codibly.clean_energy.dto.api.response.GenerationResponse;
+import com.codibly.clean_energy.exceptions.EnergyMixClientException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,12 +36,15 @@ public class EnergyMixService {
         Instant todayStartUtc = today.atStartOfDay().plusSeconds(1).toInstant(offset);
         Instant todayEndUtc = today.plusDays(3).atStartOfDay().toInstant(offset);
 
-        GenerationResponse response = energyMixClient.getEnergyMix(todayStartUtc, todayEndUtc);
-
-        if (response == null) {
-            return null;
+        GenerationResponse response;
+        try {
+            response = energyMixClient.getEnergyMix(todayStartUtc, todayEndUtc);
+            if (response == null) {
+                throw new EnergyMixClientException("EnergyMixClient response was null");
+            }
+        } catch (Exception e) {
+            throw new EnergyMixClientException("Failed to fetch generation response from EnergyMixClient", e);
         }
-
         return intervalsToDayMixes(response.generationIntervals());
     }
 
