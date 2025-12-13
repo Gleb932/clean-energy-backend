@@ -1,5 +1,6 @@
 package com.codibly.clean_energy.services;
 
+import com.codibly.clean_energy.CleanFuels;
 import com.codibly.clean_energy.client.EnergyMixClient;
 import com.codibly.clean_energy.dto.DayEnergyMixDTO;
 import com.codibly.clean_energy.dto.EnergyMixEntryDTO;
@@ -69,6 +70,13 @@ public class EnergyMixService {
                 .sorted(Comparator.comparing(DayEnergyMixDTO::date))
                 .toList();
         return mixes;
+    }
+
+    public double getCleanEnergyPercentage(DayEnergyMixDTO dayEnergyMix) {
+        return dayEnergyMix.entries().stream()
+                .filter(entry -> CleanFuels.TYPES.contains(entry.fuel()))
+                .map(EnergyMixEntryDTO::percentage)
+                .reduce(0d, Double::sum);
     }
 
 }
