@@ -1,10 +1,10 @@
 package com.codibly.clean_energy.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonAlias;
 
 public record EnergyMixEntryDTO(
-        @JsonProperty("fuel") String fuel,
-        @JsonProperty("perc") double percentage
+        @JsonAlias("fuel") String fuel,
+        @JsonAlias("perc") double percentage
 ) {
 
 }
