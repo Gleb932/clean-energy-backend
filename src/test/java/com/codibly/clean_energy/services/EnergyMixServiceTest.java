@@ -5,6 +5,7 @@ import com.codibly.clean_energy.dto.DayEnergyMixDTO;
 import com.codibly.clean_energy.dto.EnergyMixEntryDTO;
 import com.codibly.clean_energy.dto.api.response.GenerationIntervalDTO;
 import com.codibly.clean_energy.dto.api.response.GenerationResponse;
+import com.codibly.clean_energy.dto.response.ChargingWindowResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -166,5 +167,149 @@ class EnergyMixServiceTest {
                             })
             );
         }
+    }
+
+    @Test
+    void shouldPickLastTwoIntervals() {
+        GenerationResponse response = new GenerationResponse(List.of(
+                new GenerationIntervalDTO(
+                        Instant.parse("2025-12-13T23:00:00Z"),
+                        Instant.parse("2025-12-13T23:30:00Z"),
+                        List.of(
+                                new EnergyMixEntryDTO("coal", 10),
+                                new EnergyMixEntryDTO("gas", 20),
+                                new EnergyMixEntryDTO("nuclear", 70)
+                        )
+                ),
+                new GenerationIntervalDTO(
+                        Instant.parse("2025-12-13T23:30:00Z"),
+                        Instant.parse("2025-12-14T00:00:00Z"),
+                        List.of(
+                                new EnergyMixEntryDTO("coal", 20),
+                                new EnergyMixEntryDTO("gas", 50),
+                                new EnergyMixEntryDTO("nuclear", 30)
+                        )
+                ),
+                new GenerationIntervalDTO(
+                        Instant.parse("2025-12-14T00:00:00Z"),
+                        Instant.parse("2025-12-14T00:30:00Z"),
+                        List.of(
+                                new EnergyMixEntryDTO("coal", 20),
+                                new EnergyMixEntryDTO("gas", 20),
+                                new EnergyMixEntryDTO("solar", 60)
+                        )
+                ),
+                new GenerationIntervalDTO(
+                        Instant.parse("2025-12-14T00:30:00Z"),
+                        Instant.parse("2025-12-14T01:00:00Z"),
+                        List.of(
+                                new EnergyMixEntryDTO("coal", 20),
+                                new EnergyMixEntryDTO("gas", 20),
+                                new EnergyMixEntryDTO("nuclear", 50)
+                        )
+                )
+        ));
+        given(energyMixClient.getEnergyMix(any(), any())).willReturn(response);
+
+        ChargingWindowResponse result = energyMixService.calculateCleanestChargingWindow(1);
+
+        assertThat(result.start())
+                .isEqualTo(Instant.parse("2025-12-14T00:00:00Z"));
+
+        assertThat(result.end())
+                .isEqualTo(Instant.parse("2025-12-14T01:00:00Z"));
+
+        assertThat(result.cleanEnergy())
+                .isCloseTo(55.0, within(0.01));
+    }
+
+    @Test
+    void shouldPickCleanestIntervalsAcrossMidnight() {
+        GenerationResponse response = new GenerationResponse(List.of(
+                new GenerationIntervalDTO(
+                        Instant.parse("2025-12-13T23:00:00Z"),
+                        Instant.parse("2025-12-13T23:30:00Z"),
+                        List.of(
+                                new EnergyMixEntryDTO("coal", 10),
+                                new EnergyMixEntryDTO("gas", 20),
+                                new EnergyMixEntryDTO("nuclear", 30)
+                        )
+                ),
+                new GenerationIntervalDTO(
+                        Instant.parse("2025-12-13T23:30:00Z"),
+                        Instant.parse("2025-12-14T00:00:00Z"),
+                        List.of(
+                                new EnergyMixEntryDTO("coal", 20),
+                                new EnergyMixEntryDTO("gas", 10),
+                                new EnergyMixEntryDTO("nuclear", 30)
+                        )
+                ),
+                new GenerationIntervalDTO(
+                        Instant.parse("2025-12-14T00:00:00Z"),
+                        Instant.parse("2025-12-14T00:30:00Z"),
+                        List.of(
+                                new EnergyMixEntryDTO("coal", 30),
+                                new EnergyMixEntryDTO("gas", 60),
+                                new EnergyMixEntryDTO("solar", 10)
+                        )
+                ),
+                new GenerationIntervalDTO(
+                        Instant.parse("2025-12-14T00:30:00Z"),
+                        Instant.parse("2025-12-14T01:00:00Z"),
+                        List.of(
+                                new EnergyMixEntryDTO("coal", 30),
+                                new EnergyMixEntryDTO("gas", 50),
+                                new EnergyMixEntryDTO("nuclear", 50)
+                        )
+                ),
+                new GenerationIntervalDTO(
+                        Instant.parse("2025-12-14T01:00:00Z"),
+                        Instant.parse("2025-12-14T01:30:00Z"),
+                        List.of(
+                                new EnergyMixEntryDTO("coal", 30),
+                                new EnergyMixEntryDTO("gas", 50),
+                                new EnergyMixEntryDTO("nuclear", 50)
+                        )
+                ),
+                new GenerationIntervalDTO(
+                        Instant.parse("2025-12-14T01:30:00Z"),
+                        Instant.parse("2025-12-14T02:00:00Z"),
+                        List.of(
+                                new EnergyMixEntryDTO("coal", 10),
+                                new EnergyMixEntryDTO("gas", 70),
+                                new EnergyMixEntryDTO("nuclear", 10)
+                        )
+                ),
+                new GenerationIntervalDTO(
+                        Instant.parse("2025-12-14T02:00:00Z"),
+                        Instant.parse("2025-12-14T02:30:00Z"),
+                        List.of(
+                                new EnergyMixEntryDTO("coal", 30),
+                                new EnergyMixEntryDTO("gas", 50),
+                                new EnergyMixEntryDTO("nuclear", 20)
+                        )
+                ),
+                new GenerationIntervalDTO(
+                        Instant.parse("2025-12-14T02:30:00Z"),
+                        Instant.parse("2025-12-14T03:00:00Z"),
+                        List.of(
+                                new EnergyMixEntryDTO("coal", 40),
+                                new EnergyMixEntryDTO("gas", 50),
+                                new EnergyMixEntryDTO("nuclear", 10)
+                        )
+                )
+        ));
+        given(energyMixClient.getEnergyMix(any(), any())).willReturn(response);
+
+        ChargingWindowResponse result = energyMixService.calculateCleanestChargingWindow(2);
+
+        assertThat(result.start())
+                .isEqualTo(Instant.parse("2025-12-13T23:30:00Z"));
+
+        assertThat(result.end())
+                .isEqualTo(Instant.parse("2025-12-14T01:30:00Z"));
+
+        assertThat(result.cleanEnergy())
+                .isCloseTo(35.0, within(0.01));
     }
 }

@@ -25,7 +25,7 @@ public class EnergyMixController {
                 .map(dayMix -> new DayEnergyMixResponse(
                         dayMix.date(),
                         dayMix.entries(),
-                        energyMixService.getCleanEnergyPercentage(dayMix))
+                        energyMixService.getCleanEnergyPercentage(dayMix.entries()))
                 ).toList();
     }
 }
