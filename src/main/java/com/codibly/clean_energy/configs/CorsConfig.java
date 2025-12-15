@@ -8,7 +8,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
-    @Value("${frontend.origin}")
+    @Value("${frontend.origin:http://localhost:5173}")
     private String frontendOrigin;
 
     @Override
