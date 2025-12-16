@@ -1,7 +1,7 @@
 package com.codibly.clean_energy.client.impl;
 
 import com.codibly.clean_energy.client.EnergyMixClient;
-import com.codibly.clean_energy.dto.api.response.GenerationResponse;
+import com.codibly.clean_energy.dto.external.GenerationResponse;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;

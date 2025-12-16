@@ -1,4 +1,4 @@
-package com.codibly.clean_energy.dto.response;
+package com.codibly.clean_energy.dto.charging;
 
 import java.time.Instant;
 

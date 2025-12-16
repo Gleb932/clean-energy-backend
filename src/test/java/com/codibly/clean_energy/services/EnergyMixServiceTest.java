@@ -1,11 +1,13 @@
 package com.codibly.clean_energy.services;
 
 import com.codibly.clean_energy.client.EnergyMixClient;
-import com.codibly.clean_energy.dto.DayEnergyMixDTO;
-import com.codibly.clean_energy.dto.EnergyMixEntryDTO;
-import com.codibly.clean_energy.dto.api.response.GenerationIntervalDTO;
-import com.codibly.clean_energy.dto.api.response.GenerationResponse;
-import com.codibly.clean_energy.dto.response.ChargingWindowResponse;
+import com.codibly.clean_energy.dto.energymix.DayEnergyMixDTO;
+import com.codibly.clean_energy.dto.energymix.DayEnergyMixResponse;
+import com.codibly.clean_energy.dto.energymix.EnergyMixEntryDTO;
+import com.codibly.clean_energy.dto.external.GenerationIntervalDTO;
+import com.codibly.clean_energy.dto.external.GenerationMixEntryDTO;
+import com.codibly.clean_energy.dto.external.GenerationResponse;
+import com.codibly.clean_energy.dto.charging.ChargingWindowResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,29 +44,29 @@ class EnergyMixServiceTest {
                         Instant.parse("2025-12-13T00:00:00Z"),
                         Instant.parse("2025-12-13T00:30:00Z"),
                         List.of(
-                                new EnergyMixEntryDTO("coal", 50),
-                                new EnergyMixEntryDTO("solar", 5),
-                                new EnergyMixEntryDTO("other", 5),
-                                new EnergyMixEntryDTO("hydro", 10),
-                                new EnergyMixEntryDTO("nuclear", 30)
+                                new GenerationMixEntryDTO("coal", 50),
+                                new GenerationMixEntryDTO("solar", 5),
+                                new GenerationMixEntryDTO("other", 5),
+                                new GenerationMixEntryDTO("hydro", 10),
+                                new GenerationMixEntryDTO("nuclear", 30)
                         )
                 ),
                 new GenerationIntervalDTO(
                         Instant.parse("2025-12-13T00:30:00Z"),
                         Instant.parse("2025-12-13T01:00:00Z"),
                         List.of(
-                                new EnergyMixEntryDTO("coal", 25),
-                                new EnergyMixEntryDTO("solar", 5),
-                                new EnergyMixEntryDTO("other", 5),
-                                new EnergyMixEntryDTO("hydro", 20),
-                                new EnergyMixEntryDTO("nuclear", 45)
+                                new GenerationMixEntryDTO("coal", 25),
+                                new GenerationMixEntryDTO("solar", 5),
+                                new GenerationMixEntryDTO("other", 5),
+                                new GenerationMixEntryDTO("hydro", 20),
+                                new GenerationMixEntryDTO("nuclear", 45)
                         )
                 ),
                 new GenerationIntervalDTO(
                         Instant.parse("2025-12-13T01:30:00Z"),
                         Instant.parse("2025-12-13T02:00:00Z"),
                         List.of(
-                                new EnergyMixEntryDTO("other", 8)
+                                new GenerationMixEntryDTO("other", 8)
                         )
                 )
         ));
@@ -77,10 +79,10 @@ class EnergyMixServiceTest {
                 new EnergyMixEntryDTO("nuclear", 37.5)
         );
 
-        List<DayEnergyMixDTO> energyMixes = energyMixService.getSummary();
+        List<DayEnergyMixResponse> energyMixes = energyMixService.getSummary();
 
         assertThat(energyMixes).hasSize(1);
-        DayEnergyMixDTO dayMix = energyMixes.getFirst();
+        DayEnergyMixResponse dayMix = energyMixes.getFirst();
         assertThat(dayMix.date()).isEqualTo(LocalDate.of(2025, 12, 13));
         assertThat(dayMix.entries()).hasSize(expectedEntries.size());
         expectedEntries.forEach(expectedEntry ->
@@ -90,6 +92,7 @@ class EnergyMixServiceTest {
                             assertThat(actualEntry.percentage()).isCloseTo(expectedEntry.percentage(), within(0.01));
                         })
         );
+        assertThat(dayMix.cleanEnergy()).isCloseTo(57.5, within(0.01));
     }
 
     @Test
@@ -99,29 +102,29 @@ class EnergyMixServiceTest {
                         Instant.parse("2025-12-13T00:00:00Z"),
                         Instant.parse("2025-12-13T00:30:00Z"),
                         List.of(
-                                new EnergyMixEntryDTO("coal", 50),
-                                new EnergyMixEntryDTO("solar", 5),
-                                new EnergyMixEntryDTO("other", 5),
-                                new EnergyMixEntryDTO("hydro", 10),
-                                new EnergyMixEntryDTO("nuclear", 30)
+                                new GenerationMixEntryDTO("coal", 50),
+                                new GenerationMixEntryDTO("solar", 5),
+                                new GenerationMixEntryDTO("other", 5),
+                                new GenerationMixEntryDTO("hydro", 10),
+                                new GenerationMixEntryDTO("nuclear", 30)
                         )
                 ),
                 new GenerationIntervalDTO(
                         Instant.parse("2025-12-13T00:30:00Z"),
                         Instant.parse("2025-12-13T01:00:00Z"),
                         List.of(
-                                new EnergyMixEntryDTO("coal", 25),
-                                new EnergyMixEntryDTO("solar", 5),
-                                new EnergyMixEntryDTO("other", 5),
-                                new EnergyMixEntryDTO("hydro", 20),
-                                new EnergyMixEntryDTO("nuclear", 45)
+                                new GenerationMixEntryDTO("coal", 25),
+                                new GenerationMixEntryDTO("solar", 5),
+                                new GenerationMixEntryDTO("other", 5),
+                                new GenerationMixEntryDTO("hydro", 20),
+                                new GenerationMixEntryDTO("nuclear", 45)
                         )
                 ),
                 new GenerationIntervalDTO(
                         Instant.parse("2025-12-14T00:00:00Z"),
                         Instant.parse("2025-12-14T00:30:00Z"),
                         List.of(
-                                new EnergyMixEntryDTO("other", 20)
+                                new GenerationMixEntryDTO("other", 20)
                         )
                 )
                 ,
@@ -129,7 +132,7 @@ class EnergyMixServiceTest {
                         Instant.parse("2025-12-14T00:30:00Z"),
                         Instant.parse("2025-12-14T01:00:00Z"),
                         List.of(
-                                new EnergyMixEntryDTO("other", 40)
+                                new GenerationMixEntryDTO("other", 40)
                         )
                 )
         ));
@@ -150,12 +153,16 @@ class EnergyMixServiceTest {
                         new EnergyMixEntryDTO("other", 30)
                 )
         );
+        List<Double> expectedCleanEnergies = List.of(
+                57.5,
+                0d
+        );
 
-        List<DayEnergyMixDTO> energyMixes = energyMixService.getSummary();
+        List<DayEnergyMixResponse> energyMixes = energyMixService.getSummary();
 
         assertThat(energyMixes).hasSize(2);
         for (int i = 0; i < expectedDates.size(); i++) {
-            DayEnergyMixDTO dayMix = energyMixes.get(i);
+            DayEnergyMixResponse dayMix = energyMixes.get(i);
             assertThat(dayMix.date()).isEqualTo(expectedDates.get(i));
             List<EnergyMixEntryDTO> expectedEntries = expectedEntriesPerDay.get(i);
             assertThat(dayMix.entries()).hasSize(expectedEntries.size());
@@ -166,6 +173,7 @@ class EnergyMixServiceTest {
                                 assertThat(actualEntry.percentage()).isCloseTo(expectedEntry.percentage(), within(0.01));
                             })
             );
+            assertThat(dayMix.cleanEnergy()).isCloseTo(expectedCleanEnergies.get(i), within(0.01));
         }
     }
 
@@ -176,36 +184,36 @@ class EnergyMixServiceTest {
                         Instant.parse("2025-12-13T23:00:00Z"),
                         Instant.parse("2025-12-13T23:30:00Z"),
                         List.of(
-                                new EnergyMixEntryDTO("coal", 10),
-                                new EnergyMixEntryDTO("gas", 20),
-                                new EnergyMixEntryDTO("nuclear", 70)
+                                new GenerationMixEntryDTO("coal", 10),
+                                new GenerationMixEntryDTO("gas", 20),
+                                new GenerationMixEntryDTO("nuclear", 70)
                         )
                 ),
                 new GenerationIntervalDTO(
                         Instant.parse("2025-12-13T23:30:00Z"),
                         Instant.parse("2025-12-14T00:00:00Z"),
                         List.of(
-                                new EnergyMixEntryDTO("coal", 20),
-                                new EnergyMixEntryDTO("gas", 50),
-                                new EnergyMixEntryDTO("nuclear", 30)
+                                new GenerationMixEntryDTO("coal", 20),
+                                new GenerationMixEntryDTO("gas", 50),
+                                new GenerationMixEntryDTO("nuclear", 30)
                         )
                 ),
                 new GenerationIntervalDTO(
                         Instant.parse("2025-12-14T00:00:00Z"),
                         Instant.parse("2025-12-14T00:30:00Z"),
                         List.of(
-                                new EnergyMixEntryDTO("coal", 20),
-                                new EnergyMixEntryDTO("gas", 20),
-                                new EnergyMixEntryDTO("solar", 60)
+                                new GenerationMixEntryDTO("coal", 20),
+                                new GenerationMixEntryDTO("gas", 20),
+                                new GenerationMixEntryDTO("solar", 60)
                         )
                 ),
                 new GenerationIntervalDTO(
                         Instant.parse("2025-12-14T00:30:00Z"),
                         Instant.parse("2025-12-14T01:00:00Z"),
                         List.of(
-                                new EnergyMixEntryDTO("coal", 20),
-                                new EnergyMixEntryDTO("gas", 20),
-                                new EnergyMixEntryDTO("nuclear", 50)
+                                new GenerationMixEntryDTO("coal", 20),
+                                new GenerationMixEntryDTO("gas", 20),
+                                new GenerationMixEntryDTO("nuclear", 50)
                         )
                 )
         ));
@@ -230,72 +238,72 @@ class EnergyMixServiceTest {
                         Instant.parse("2025-12-13T23:00:00Z"),
                         Instant.parse("2025-12-13T23:30:00Z"),
                         List.of(
-                                new EnergyMixEntryDTO("coal", 10),
-                                new EnergyMixEntryDTO("gas", 20),
-                                new EnergyMixEntryDTO("nuclear", 30)
+                                new GenerationMixEntryDTO("coal", 10),
+                                new GenerationMixEntryDTO("gas", 20),
+                                new GenerationMixEntryDTO("nuclear", 30)
                         )
                 ),
                 new GenerationIntervalDTO(
                         Instant.parse("2025-12-13T23:30:00Z"),
                         Instant.parse("2025-12-14T00:00:00Z"),
                         List.of(
-                                new EnergyMixEntryDTO("coal", 20),
-                                new EnergyMixEntryDTO("gas", 10),
-                                new EnergyMixEntryDTO("nuclear", 30)
+                                new GenerationMixEntryDTO("coal", 20),
+                                new GenerationMixEntryDTO("gas", 10),
+                                new GenerationMixEntryDTO("nuclear", 30)
                         )
                 ),
                 new GenerationIntervalDTO(
                         Instant.parse("2025-12-14T00:00:00Z"),
                         Instant.parse("2025-12-14T00:30:00Z"),
                         List.of(
-                                new EnergyMixEntryDTO("coal", 30),
-                                new EnergyMixEntryDTO("gas", 60),
-                                new EnergyMixEntryDTO("solar", 10)
+                                new GenerationMixEntryDTO("coal", 30),
+                                new GenerationMixEntryDTO("gas", 60),
+                                new GenerationMixEntryDTO("solar", 10)
                         )
                 ),
                 new GenerationIntervalDTO(
                         Instant.parse("2025-12-14T00:30:00Z"),
                         Instant.parse("2025-12-14T01:00:00Z"),
                         List.of(
-                                new EnergyMixEntryDTO("coal", 30),
-                                new EnergyMixEntryDTO("gas", 50),
-                                new EnergyMixEntryDTO("nuclear", 50)
+                                new GenerationMixEntryDTO("coal", 30),
+                                new GenerationMixEntryDTO("gas", 50),
+                                new GenerationMixEntryDTO("nuclear", 50)
                         )
                 ),
                 new GenerationIntervalDTO(
                         Instant.parse("2025-12-14T01:00:00Z"),
                         Instant.parse("2025-12-14T01:30:00Z"),
                         List.of(
-                                new EnergyMixEntryDTO("coal", 30),
-                                new EnergyMixEntryDTO("gas", 50),
-                                new EnergyMixEntryDTO("nuclear", 50)
+                                new GenerationMixEntryDTO("coal", 30),
+                                new GenerationMixEntryDTO("gas", 50),
+                                new GenerationMixEntryDTO("nuclear", 50)
                         )
                 ),
                 new GenerationIntervalDTO(
                         Instant.parse("2025-12-14T01:30:00Z"),
                         Instant.parse("2025-12-14T02:00:00Z"),
                         List.of(
-                                new EnergyMixEntryDTO("coal", 10),
-                                new EnergyMixEntryDTO("gas", 70),
-                                new EnergyMixEntryDTO("nuclear", 10)
+                                new GenerationMixEntryDTO("coal", 10),
+                                new GenerationMixEntryDTO("gas", 70),
+                                new GenerationMixEntryDTO("nuclear", 10)
                         )
                 ),
                 new GenerationIntervalDTO(
                         Instant.parse("2025-12-14T02:00:00Z"),
                         Instant.parse("2025-12-14T02:30:00Z"),
                         List.of(
-                                new EnergyMixEntryDTO("coal", 30),
-                                new EnergyMixEntryDTO("gas", 50),
-                                new EnergyMixEntryDTO("nuclear", 20)
+                                new GenerationMixEntryDTO("coal", 30),
+                                new GenerationMixEntryDTO("gas", 50),
+                                new GenerationMixEntryDTO("nuclear", 20)
                         )
                 ),
                 new GenerationIntervalDTO(
                         Instant.parse("2025-12-14T02:30:00Z"),
                         Instant.parse("2025-12-14T03:00:00Z"),
                         List.of(
-                                new EnergyMixEntryDTO("coal", 40),
-                                new EnergyMixEntryDTO("gas", 50),
-                                new EnergyMixEntryDTO("nuclear", 10)
+                                new GenerationMixEntryDTO("coal", 40),
+                                new GenerationMixEntryDTO("gas", 50),
+                                new GenerationMixEntryDTO("nuclear", 10)
                         )
                 )
         ));

@@ -1,6 +1,6 @@
 package com.codibly.clean_energy.client;
 
-import com.codibly.clean_energy.dto.api.response.GenerationResponse;
+import com.codibly.clean_energy.dto.external.GenerationResponse;
 
 import java.time.Instant;
 

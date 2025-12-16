@@ -1,4 +1,4 @@
-package com.codibly.clean_energy.dto.api.response;
+package com.codibly.clean_energy.dto.external;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

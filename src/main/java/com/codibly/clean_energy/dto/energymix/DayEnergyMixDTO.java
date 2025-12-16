@@ -1,4 +1,4 @@
-package com.codibly.clean_energy.dto;
+package com.codibly.clean_energy.dto.energymix;
 
 import java.time.LocalDate;
 import java.util.List;

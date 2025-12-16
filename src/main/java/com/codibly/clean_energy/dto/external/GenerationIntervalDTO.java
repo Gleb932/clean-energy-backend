@@ -1,6 +1,5 @@
-package com.codibly.clean_energy.dto.api.response;
+package com.codibly.clean_energy.dto.external;
 
-import com.codibly.clean_energy.dto.EnergyMixEntryDTO;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -13,6 +12,6 @@ public record GenerationIntervalDTO(
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mmX", timezone = "UTC")
         Instant to,
         @JsonProperty("generationmix")
-        List<EnergyMixEntryDTO> entries
+        List<GenerationMixEntryDTO> entries
 ) {
 }

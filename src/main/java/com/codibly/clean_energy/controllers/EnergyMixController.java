@@ -1,7 +1,6 @@
 package com.codibly.clean_energy.controllers;
 
-import com.codibly.clean_energy.dto.DayEnergyMixDTO;
-import com.codibly.clean_energy.dto.response.DayEnergyMixResponse;
+import com.codibly.clean_energy.dto.energymix.DayEnergyMixResponse;
 import com.codibly.clean_energy.services.EnergyMixService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,12 +19,6 @@ public class EnergyMixController {
 
     @GetMapping("/summary")
     List<DayEnergyMixResponse> getSummary() {
-        List<DayEnergyMixDTO> result = energyMixService.getSummary();
-        return result.stream()
-                .map(dayMix -> new DayEnergyMixResponse(
-                        dayMix.date(),
-                        dayMix.entries(),
-                        energyMixService.getCleanEnergyPercentage(dayMix.entries()))
-                ).toList();
+        return energyMixService.getSummary();
     }
 }

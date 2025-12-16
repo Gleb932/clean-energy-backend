@@ -1,15 +1,18 @@
 package com.codibly.clean_energy.services;
 
 import com.codibly.clean_energy.client.EnergyMixClient;
-import com.codibly.clean_energy.dto.DayEnergyMixDTO;
-import com.codibly.clean_energy.dto.EnergyMixEntryDTO;
-import com.codibly.clean_energy.dto.api.response.GenerationIntervalDTO;
-import com.codibly.clean_energy.dto.api.response.GenerationResponse;
-import com.codibly.clean_energy.dto.response.ChargingWindowResponse;
+import com.codibly.clean_energy.dto.charging.ChargingWindowResponse;
+import com.codibly.clean_energy.dto.energymix.DayEnergyMixDTO;
+import com.codibly.clean_energy.dto.energymix.DayEnergyMixResponse;
+import com.codibly.clean_energy.dto.energymix.EnergyMixEntryDTO;
+import com.codibly.clean_energy.dto.energymix.IntervalEnergyMixDTO;
+import com.codibly.clean_energy.dto.external.GenerationIntervalDTO;
+import com.codibly.clean_energy.dto.external.GenerationMixEntryDTO;
+import com.codibly.clean_energy.dto.external.GenerationResponse;
 import com.codibly.clean_energy.exceptions.EnergyMixClientException;
 import com.codibly.clean_energy.exceptions.ForecastWindowException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -21,30 +24,42 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
-@RestController
+@Service
 public class EnergyMixService {
+    private final static int INTERVAL_LENGTH = 30;
     private final EnergyMixClient energyMixClient;
     private final Clock clock;
-    private final static int INTERVAL_LENGTH = 30;
 
     public EnergyMixService(EnergyMixClient energyMixClient, Clock clock) {
         this.energyMixClient = energyMixClient;
         this.clock = clock;
     }
 
-    public List<DayEnergyMixDTO> getSummary() {
+    public List<DayEnergyMixResponse> getSummary() {
         GenerationResponse generationForecast = getGenerationForecast(3);
-        return intervalsToDayMixes(generationForecast.generationIntervals());
+        return intervalsToDayMixes(generationForecast.generationIntervals().stream()
+                .map(this::map)
+                .toList()
+        ).stream().map(dayMix -> new DayEnergyMixResponse(
+                dayMix.date(),
+                dayMix.entries(),
+                getCleanEnergyPercentage(dayMix.entries())
+        )).toList();
     }
 
-    private List<DayEnergyMixDTO> intervalsToDayMixes(List<GenerationIntervalDTO> generationIntervals) {
+    public ChargingWindowResponse calculateCleanestChargingWindow(int hours) {
+        GenerationResponse generationForecast = getGenerationForecast(3);
+        return calculateCleanestChargingWindow(hours, generationForecast.generationIntervals().stream().map(this::map).toList());
+    }
+
+    private List<DayEnergyMixDTO> intervalsToDayMixes(List<IntervalEnergyMixDTO> intervals) {
         //group intervals by date
-        Map<LocalDate, List<GenerationIntervalDTO>> generationIntervalsPerDay = generationIntervals.stream().collect(Collectors.groupingBy(
+        Map<LocalDate, List<IntervalEnergyMixDTO>> intervalsPerDay = intervals.stream().collect(Collectors.groupingBy(
                 interval -> LocalDate.ofInstant(interval.from(), ZoneOffset.UTC)
         ));
 
         //convert list of entries to DayEnergyMixDTO, calculating average
-        List<DayEnergyMixDTO> mixes = generationIntervalsPerDay.entrySet().stream().map(entry -> new DayEnergyMixDTO(
+        List<DayEnergyMixDTO> mixes = intervalsPerDay.entrySet().stream().map(entry -> new DayEnergyMixDTO(
                         entry.getKey(),
                         entry.getValue().stream()
                                 .flatMap(interval -> interval.entries().stream())
@@ -67,11 +82,6 @@ public class EnergyMixService {
                 .reduce(0d, Double::sum);
     }
 
-    public ChargingWindowResponse calculateCleanestChargingWindow(int hours) {
-        GenerationResponse generationForecast = getGenerationForecast(3);
-        return calculateCleanestChargingWindow(hours, generationForecast.generationIntervals());
-    }
-
     private GenerationResponse getGenerationForecast(int days) {
         Instant now = Instant.now(clock);
         LocalDate today = LocalDate.ofInstant(now, clock.getZone());
@@ -91,35 +101,50 @@ public class EnergyMixService {
         }
     }
 
-    private ChargingWindowResponse calculateCleanestChargingWindow(int hours, List<GenerationIntervalDTO> generationIntervals) {
+    private ChargingWindowResponse calculateCleanestChargingWindow(int hours, List<IntervalEnergyMixDTO> intervals) {
         int intervalsPerWindow = hours * 60 / INTERVAL_LENGTH;
-        if(generationIntervals.size() < intervalsPerWindow) throw new ForecastWindowException(hours);
+        if (intervals.size() < intervalsPerWindow) throw new ForecastWindowException(hours);
 
-        double[] cleanEnergy = new double[generationIntervals.size()];
-        for(int i = 0; i < generationIntervals.size(); i++) {
-            cleanEnergy[i] = getCleanEnergyPercentage(generationIntervals.get(i).entries());
+        double[] cleanEnergy = new double[intervals.size()];
+        for (int i = 0; i < intervals.size(); i++) {
+            cleanEnergy[i] = getCleanEnergyPercentage(intervals.get(i).entries());
         }
 
         //fill the first window to needed hours
         double sum = 0;
-        for(int i = 0; i < intervalsPerWindow; i++) {
+        for (int i = 0; i < intervalsPerWindow; i++) {
             sum += cleanEnergy[i];
         }
 
         //slide the window and check if the sum gets better
         int bestWindowIndex = 0;
         double bestSum = sum;
-        for(int i = intervalsPerWindow; i < cleanEnergy.length; i++) {
+        for (int i = intervalsPerWindow; i < cleanEnergy.length; i++) {
             sum += cleanEnergy[i] - cleanEnergy[i - intervalsPerWindow];
-            if(sum > bestSum) {
+            if (sum > bestSum) {
                 bestWindowIndex = i - intervalsPerWindow + 1;
                 bestSum = sum;
             }
         }
 
         return new ChargingWindowResponse(
-                generationIntervals.get(bestWindowIndex).from(),
-                generationIntervals.get(bestWindowIndex + intervalsPerWindow - 1).to(),
+                intervals.get(bestWindowIndex).from(),
+                intervals.get(bestWindowIndex + intervalsPerWindow - 1).to(),
                 bestSum / intervalsPerWindow);
+    }
+
+    private EnergyMixEntryDTO map(GenerationMixEntryDTO entry) {
+        return new EnergyMixEntryDTO(
+                entry.fuel(),
+                entry.percentage()
+        );
+    }
+
+    private IntervalEnergyMixDTO map(GenerationIntervalDTO interval) {
+        return new IntervalEnergyMixDTO(
+                interval.from(),
+                interval.to(),
+                interval.entries().stream().map(this::map).toList()
+        );
     }
 }
