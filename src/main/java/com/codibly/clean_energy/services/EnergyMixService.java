@@ -1,6 +1,5 @@
 package com.codibly.clean_energy.services;
 
-import com.codibly.clean_energy.CleanFuels;
 import com.codibly.clean_energy.client.EnergyMixClient;
 import com.codibly.clean_energy.dto.DayEnergyMixDTO;
 import com.codibly.clean_energy.dto.EnergyMixEntryDTO;
