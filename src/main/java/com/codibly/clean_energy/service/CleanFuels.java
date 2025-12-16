@@ -1,4 +1,4 @@
-package com.codibly.clean_energy.services;
+package com.codibly.clean_energy.service;
 
 import java.util.Set;
 

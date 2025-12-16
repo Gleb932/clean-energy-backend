@@ -1,7 +1,7 @@
-package com.codibly.clean_energy.controllers;
+package com.codibly.clean_energy.controller;
 
 import com.codibly.clean_energy.dto.charging.ChargingWindowResponse;
-import com.codibly.clean_energy.services.EnergyMixService;
+import com.codibly.clean_energy.service.EnergyMixService;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;

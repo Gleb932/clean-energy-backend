@@ -1,4 +1,4 @@
-package com.codibly.clean_energy.exceptions;
+package com.codibly.clean_energy.exception;
 
 public class EnergyMixClientException extends RuntimeException {
     public EnergyMixClientException(String message) {

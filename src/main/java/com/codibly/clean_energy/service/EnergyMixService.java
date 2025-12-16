@@ -1,4 +1,4 @@
-package com.codibly.clean_energy.services;
+package com.codibly.clean_energy.service;
 
 import com.codibly.clean_energy.client.EnergyMixClient;
 import com.codibly.clean_energy.dto.charging.ChargingWindowResponse;
@@ -9,8 +9,8 @@ import com.codibly.clean_energy.dto.energymix.IntervalEnergyMixDTO;
 import com.codibly.clean_energy.dto.external.GenerationIntervalDTO;
 import com.codibly.clean_energy.dto.external.GenerationMixEntryDTO;
 import com.codibly.clean_energy.dto.external.GenerationResponse;
-import com.codibly.clean_energy.exceptions.EnergyMixClientException;
-import com.codibly.clean_energy.exceptions.ForecastWindowException;
+import com.codibly.clean_energy.exception.EnergyMixClientException;
+import com.codibly.clean_energy.exception.ForecastWindowException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

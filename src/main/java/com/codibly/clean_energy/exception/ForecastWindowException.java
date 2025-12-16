@@ -1,4 +1,4 @@
-package com.codibly.clean_energy.exceptions;
+package com.codibly.clean_energy.exception;
 
 public class ForecastWindowException extends RuntimeException {
     public ForecastWindowException(int hours) {

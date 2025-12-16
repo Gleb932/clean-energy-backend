@@ -1,4 +1,4 @@
-package com.codibly.clean_energy.configs;
+package com.codibly.clean_energy.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

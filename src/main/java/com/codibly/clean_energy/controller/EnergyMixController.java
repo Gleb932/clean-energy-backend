@@ -1,7 +1,7 @@
-package com.codibly.clean_energy.controllers;
+package com.codibly.clean_energy.controller;
 
 import com.codibly.clean_energy.dto.energymix.DayEnergyMixResponse;
-import com.codibly.clean_energy.services.EnergyMixService;
+import com.codibly.clean_energy.service.EnergyMixService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
