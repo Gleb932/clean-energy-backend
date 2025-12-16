@@ -2,6 +2,7 @@ package com.codibly.clean_energy.controller;
 
 import com.codibly.clean_energy.dto.charging.ChargingWindowResponse;
 import com.codibly.clean_energy.service.EnergyMixService;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.validation.annotation.Validated;
@@ -21,7 +22,7 @@ public class ChargingController {
     }
 
     @GetMapping("/window")
-    ChargingWindowResponse getWindow(@NotNull @RequestParam @Min(1) Integer hours) {
+    ChargingWindowResponse getWindow(@NotNull @RequestParam @Min(1) @Max(6) Integer hours) {
         return energyMixService.calculateCleanestChargingWindow(hours);
     }
 }
